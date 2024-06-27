@@ -74,6 +74,10 @@ def concat_hicap(output_dir, to_csv=False):
     if all_dfs:
         # Concatenate all dataframes while keeping the header from the first file only
         summary_df = pd.concat(all_dfs, ignore_index=True)
+        # change HEADER names here
+        summary_df.columns = ['isolate', 'predicted_serotype', 'attributes', 'genes_identified', 'locus_location', 'region_I_genes', 'region_II_genes', 'region_III_genes', 'IS1016_hits']
+        # change predicted_serotype values here
+        summary_df['predicted_serotype'] = summary_df['predicted_serotype'].apply(lambda x: x[-1] if x != 'no hits to any cap locus gene found' else 'Non-typeable')
         summary_path = os.path.join(output_dir, "hicap_summary.tab")
         summary_df.to_csv(summary_path, sep='\t', index=False, header=True)
         print(f"Created concatenated file: {summary_path}")
@@ -96,8 +100,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Runs the mdu-hicap function with the sample ID and path to contigs.",
         usage=(
-            "## Recommended:\n"
-            "python mdu-hicap.py --sample_id <ID> --path_contigs <path/to/contigs> [--parallel] [--concat] [--output_dir <dir>] [--csv]\n"
+            "\n## Recommended:\n"
             "python mdu-hicap.py --contigs_file <path/to/contigs_file> [--parallel] [--concat] [--output_dir <dir>] [--csv]\n\n"
             "## Options:\n"
             "mdu-hicap.py [--sample_id <ID> --path_contigs <path/to/contigs>] [--contigs_file <file>]\n"
@@ -105,13 +108,13 @@ def main():
         )
     )
 
-    parser.add_argument('-i', '--sample_id', help="Sample ID for the hicap analysis")
-    parser.add_argument('-c', '--path_contigs', help="Path to contigs file")
+    parser.add_argument('-i', '--sample_id', help="Sample ID for the hicap analysis.")
+    parser.add_argument('-c', '--path_contigs', help="Path to contigs file.")
     parser.add_argument('-f', '--contigs_file', help="Path to tab-delimited file containing sample IDs and contigs paths", required=False)
 
-    parser.add_argument('-p', '--parallel', action='store_true', help="Run parallel jobs")
-    parser.add_argument('-t', '--concat', action='store_true', help="Concatenate .tsv files and convert to .csv")
-    parser.add_argument('-o', '--output_dir', default='hicap_output', help="Directory for hicap outputs and concatenation")
+    parser.add_argument('-p', '--parallel', action='store_true', help="Run parallel jobs.")
+    parser.add_argument('-t', '--concat', action='store_true', help="Concatenate .tsv files from individual samples to a single hicap_summary.tab file.")
+    parser.add_argument('-o', '--output_dir', default='hicap_output', help="Directory for hicap outputs and concatenation. [default: hicap_output]")
     parser.add_argument('--csv', action='store_true', help="Convert concatenated summary to CSV format. NOTE: Use it with --concat option.")
 
     args = parser.parse_args()
@@ -136,9 +139,8 @@ if __name__ == "__main__":
         parser = argparse.ArgumentParser(
             description="Runs the mdu-hicap function with the sample ID and path to contigs.",
             usage=(
-                "## Recommended:\n"
-                "python mdu-hicap.py --contigs_file <path/to/contigs_file> [--parallel] [--concat] [--output_dir <dir>] [--csv]\n"
-                "python mdu-hicap.py --sample_id <ID> --path_contigs <path/to/contigs>\n\n"
+                "\n## Recommended:\n"
+                "python mdu-hicap.py --contigs_file <path/to/contigs_file> [--parallel] [--concat] [--output_dir <dir>] [--csv]\n\n"
                 "## Options:\n"
                 "mdu-hicap.py [--sample_id <ID> --path_contigs <path/to/contigs>] [--contigs_file <file>]\n"
                 "                      [--parallel] [--concat] [--output_dir <dir>] [--csv]\n"
