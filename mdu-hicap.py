@@ -75,9 +75,9 @@ def concat_hicap(output_dir, to_csv=False):
         # Concatenate all dataframes while keeping the header from the first file only
         summary_df = pd.concat(all_dfs, ignore_index=True)
         # change HEADER names here
-        summary_df.columns = ['isolate', 'predicted_serotype', 'attributes', 'genes_identified', 'locus_location', 'region_I_genes', 'region_II_genes', 'region_III_genes', 'IS1016_hits']
-        # change predicted_serotype values here
-        summary_df['predicted_serotype'] = summary_df['predicted_serotype'].apply(lambda x: x[-1] if x != 'no hits to any cap locus gene found' else 'Non-typeable')
+        summary_df.columns = ['ID', 'hicap_serotype', 'attributes', 'genes_identified', 'locus_location', 'region_I_genes', 'region_II_genes', 'region_III_genes', 'IS1016_hits']
+        # change hicap_serotype values here
+        summary_df['hicap_serotype'] = summary_df['hicap_serotype'].apply(lambda x: x[-1] if x != 'no hits to any cap locus gene found' else 'Non-typeable')
         summary_path = os.path.join(output_dir, "hicap_summary.tab")
         summary_df.to_csv(summary_path, sep='\t', index=False, header=True)
         print(f"Created concatenated file: {summary_path}")
