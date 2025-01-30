@@ -1,4 +1,4 @@
-name: Hicap Serotyping Test
+name: Hicap test workflow
 
 on:
   workflow_dispatch:
@@ -14,15 +14,15 @@ jobs:
         uses: actions/checkout@v4
 
       # Step 2: Set up Conda with Mamba
-      - name: Set up Conda with Mamba
+      - name: Set up Conda with Miniforge3
         uses: conda-incubator/setup-miniconda@v3
         with:
-          miniforge-variant: Mambaforge
+          miniforge-variant: Miniforge3
           miniforge-version: latest
           use-mamba: true
-          python-version: "3.10"
+          python-version: "3.6"
           activate-environment: hicap-env
-
+          
       # Step 3: Create Conda environment using Mamba and YAML file
       - name: Create Conda environment from YAML
         shell: bash -el {0}
