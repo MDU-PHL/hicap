@@ -1,0 +1,40 @@
+name: Hicap Serotyping Test
+
+on:
+  release:
+    types: [workflow_dispatch]
+
+jobs:
+  test-and-compare:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout current code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Conda with Mamba
+      - name: Set up Conda with Mamba
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          use-mamba: true
+          python-version: "3.10"
+          activate-environment: hicap-env
+
+      # Step 3: Create Conda environment using Mamba and YAML file
+      - name: Create Conda environment from YAML
+        shell: bash -el {0}
+        run: |
+          mamba env create -f environment.yml
+
+      # Step 4: Activate the Conda environment
+      - name: Activate Conda environment
+        shell: bash -el {0}
+        run: |
+          conda activate hicap-env
+
+      # Step 5: Check hicap version
+      - name: Check hicap version
+        shell: bash -el {0}
+        run: hicap --version
