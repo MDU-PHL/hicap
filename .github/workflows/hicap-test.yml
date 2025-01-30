@@ -1,8 +1,9 @@
 name: Hicap Serotyping Test
 
 on:
+  workflow_dispatch:
   release:
-    types: [workflow_dispatch]
+    types: [created, published]
 
 jobs:
   test-and-compare:
