@@ -38,4 +38,5 @@ jobs:
       # Step 5: Check hicap version
       - name: Check hicap version
         shell: bash -el {0}
-        run: hicap --version
+        run: | 
+          hicap --version
