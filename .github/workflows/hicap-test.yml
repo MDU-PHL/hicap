@@ -21,7 +21,7 @@ jobs:
           miniforge-version: latest
           use-mamba: true
           python-version: "3.6"
-          activate-environment: hicap-env
+          activate-environment: base
           
       # Step 3: Create Conda environment using Mamba and YAML file
       - name: Create Conda environment from YAML
