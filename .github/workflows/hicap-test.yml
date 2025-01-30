@@ -39,4 +39,5 @@ jobs:
       - name: Check hicap version
         shell: bash -el {0}
         run: | 
+          source $CONDA/bin/activate hicap-env
           hicap --version
