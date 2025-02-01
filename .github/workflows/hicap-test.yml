@@ -1,9 +1,10 @@
 name: Hicap Test Workflow
 
-on:
-  workflow_dispatch:
-  release:
-    types: [created, published]
+on : [push]
+# on:
+#   workflow_dispatch:
+#   release:
+#     types: [created, published]
 
 jobs:
   test-and-compare:

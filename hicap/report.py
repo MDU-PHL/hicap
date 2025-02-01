@@ -23,15 +23,24 @@ class SummaryData:
         self.hits_by_contig = None
         self.is_hits = None
 
-
 def write_outputs(locus_data, args):
     # Report
     prefix = pathlib.Path(args.query_fp.stem).stem if args.query_fp.name.endswith('gz') else args.query_fp.stem
     output_report_fp = pathlib.Path(args.output_dir, '%s.tsv' % prefix)
     fasta = utility.read_fasta(args.query_fp)
     summary_data = create_summary(locus_data, fasta)
+    hicap_version = "1.0.4"  # or retrieve the actual version from relevant source
     with output_report_fp.open('w') as fh:
-        write_summary(summary_data, prefix, fh)
+        write_summary(summary_data, prefix, fh, hicap_version)
+        
+# def write_outputs(locus_data, args):
+#     # Report
+#     prefix = pathlib.Path(args.query_fp.stem).stem if args.query_fp.name.endswith('gz') else args.query_fp.stem
+#     output_report_fp = pathlib.Path(args.output_dir, '%s.tsv' % prefix)
+#     fasta = utility.read_fasta(args.query_fp)
+#     summary_data = create_summary(locus_data, fasta)
+#     with output_report_fp.open('w') as fh:
+#         write_summary(summary_data, prefix, fh)
 
     # Genbank - create
     # We allow the user to request the full input sequence to be present in the output. The most
@@ -120,9 +129,61 @@ def create_summary(locus_data, contig_sequences):
     return summary_data
 
 
-def write_summary(data, prefix, fh):
+# def write_summary(data, prefix, fh):
+#     # Header
+#     header = ('isolate', 'predicted_serotype', 'attributes', 'genes_identified', 'locus_location',
+#               'region_I_genes', 'region_II_genes', 'region_III_genes', 'IS1016_hits')
+#     print('#', end='', file=fh)
+#     print(*header, sep='\t', file=fh)
+
+#     # Isolate and predict serotypes
+#     print(prefix, end='\t', file=fh)
+#     print(','.join(data.serotypes), end='\t', file=fh)
+
+#     # Locus attributes
+#     attributes = list()
+#     if any(region_complete[0] for region_complete in data.completeness.values()):
+#         attributes.append('missing_genes')
+#     else:
+#         attributes.append('full_gene_complement')
+#     if any(data.truncated_genes.values()):
+#         attributes.append('truncated_genes')
+#     if any(data.hits_without_orfs.values()):
+#         attributes.append('matches_without_orfs')
+#     if data.multiple_contigs:
+#         attributes.append('fragmented_locus')
+#     if data.duplicated:
+#         attributes.append('duplicated')
+#     # missing orfs
+#     print(','.join(attributes), end='\t', file=fh)
+
+#     # Genes found and contigs with location
+#     contig_genes = dict()
+#     contig_bounds = dict()
+#     for contig, contig_hits in data.hits_by_contig.items():
+#         hits_sorted = sorted(contig_hits, key=lambda h: locus.get_hit_start(h))
+#         contig_genes[contig] = ','.join(get_gene_names(hits_sorted))
+#         start = locus.get_hit_start(hits_sorted[0])
+#         end = locus.get_hit_end(hits_sorted[-1])
+#         contig_bounds[contig] = '%s:%s-%s' % (contig, start, end)
+#     print(*contig_genes.values(), sep=';', end='\t', file=fh)
+#     print(*contig_bounds.values(), sep=';', end='\t', file=fh)
+
+#     # Genes missing
+#     missing_genes = dict()
+#     for region, (genes, found, expected) in data.completeness.items():
+#         text = '%s/%s' % (found, expected)
+#         if genes:
+#             text = '%s (missing: %s)' % (text, ','.join(genes))
+#         missing_genes[region] = text
+#     print(*missing_genes.values(), sep='\t', end='\t', file=fh)
+
+#     # IS1016 hits
+#     print(data.is_hits, file=fh)
+
+def write_summary(data, prefix, fh, hicap_version):
     # Header
-    header = ('isolate', 'predicted_serotype', 'attributes', 'genes_identified', 'locus_location',
+    header = ('isolate', 'predicted_serotype', 'hicap_version', 'attributes', 'genes_identified', 'locus_location',
               'region_I_genes', 'region_II_genes', 'region_III_genes', 'IS1016_hits')
     print('#', end='', file=fh)
     print(*header, sep='\t', file=fh)
@@ -130,6 +191,7 @@ def write_summary(data, prefix, fh):
     # Isolate and predict serotypes
     print(prefix, end='\t', file=fh)
     print(','.join(data.serotypes), end='\t', file=fh)
+    print(hicap_version, end='\t', file=fh)
 
     # Locus attributes
     attributes = list()
