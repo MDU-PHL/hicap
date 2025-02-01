@@ -1,4 +1,4 @@
-name: Hicap test workflow
+name: Hicap Test Workflow
 
 on:
   workflow_dispatch:
@@ -13,31 +13,80 @@ jobs:
       - name: Checkout current code
         uses: actions/checkout@v4
 
-      # Step 2: Set up Conda with Mamba
-      - name: Set up Conda with Miniforge3
+      # Step 2: Set up Conda with Mamba (Using Miniforge3)
+      - name: Set up Conda with Mamba
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-variant: Miniforge3
           miniforge-version: latest
           use-mamba: true
-          python-version: "3.10"
-          activate-environment: test
-          
+          activate-environment: hicap-env
+
       # Step 3: Create Conda environment using Mamba and YAML file
       - name: Create Conda environment from YAML
         shell: bash -el {0}
         run: |
-          mamba env create -f environment.yml
+          set -euo pipefail
+          if ! conda info --envs | grep -q "hicap-env"; then
+            mamba env create -f environment.yml
+          fi
 
-      # Step 4: Activate the Conda environment
-      - name: Activate Conda environment
-        shell: bash -el {0}
-        run: |
-          conda activate hicap-env
-
-      # Step 5: Check hicap version
+      # Step 4: Activate Conda environment and check hicap version
       - name: Check hicap version
         shell: bash -el {0}
-        run: | 
-          source $CONDA/bin/activate hicap-env
+        run: |
+          set -euo pipefail
+          conda activate hicap-env
           hicap --version
+
+      # Step 5: Run hicap test (before installing editable version)
+      - name: Run hicap test (before update)
+        shell: bash -el {0}
+        run: |
+          set -euo pipefail
+          conda activate hicap-env
+          mkdir -p test_old
+          hicap -q tests/data/type_a.fasta -o test_old
+
+      # Step 6: Install editable hicap package
+      - name: Install editable hicap package
+        shell: bash -el {0}
+        run: |
+          set -euo pipefail
+          conda activate hicap-env
+          pip install -e .
+
+      # Step 7: Run hicap test (after installing the editable version)
+      - name: Run hicap test (after update)
+        shell: bash -el {0}
+        run: |
+          set -euo pipefail
+          conda activate hicap-env
+          mkdir -p test_new
+          hicap -q tests/data/type_a.fasta -o test_new
+
+      # Step 8: Compare test results
+      - name: Compare test results
+        id: compare
+        shell: bash -el {0}
+        run: |
+          set -euo pipefail
+          conda activate hicap-env
+          if ! diff -r test_old test_new > diff_output.txt; then
+            echo "DIFF_DETECTED=true" >> $GITHUB_ENV
+          else
+            echo "DIFF_DETECTED=false" >> $GITHUB_ENV
+          fi
+
+      # Step 9: Print output if there are differences
+      - name: Print hicap test output
+        if: env.DIFF_DETECTED == 'true'
+        shell: bash -el {0}
+        run: |
+          set -euo pipefail
+          echo "Differences found between test_old and test_new:"
+          cat diff_output.txt
+          echo "==== OLD OUTPUT ===="
+          cat test_old/type_a.tsv || echo "No previous output found"
+          echo "==== NEW OUTPUT ===="
+          cat test_new/type_a.tsv || echo "No new output found"
